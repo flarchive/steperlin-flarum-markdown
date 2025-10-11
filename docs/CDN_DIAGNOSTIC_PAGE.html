@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flarum Markdown CDN依赖诊断工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            border-left: 4px solid #6c757d;
+        }
+        .status-card.success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .status-card.error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .status-card.warning {
+            border-left-color: #ffc107;
+            background-color: #fff3cd;
+        }
+        .log-area {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn.success {
+            background: #28a745;
+        }
+        .btn.error {
+            background: #dc3545;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .network-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .error-detail {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Flarum Markdown CDN依赖诊断工具</h1>
+            <p>实时监控和诊断marked.js与DOMPurify的加载状态</p>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card" id="marked-status">
+                <h3>📝 marked.js 状态</h3>
+                <div id="marked-info">检查中...</div>
+            </div>
+            <div class="status-card" id="dompurify-status">
+                <h3>🛡️ DOMPurify 状态</h3>
+                <div id="dompurify-info">检查中...</div>
+            </div>
+            <div class="status-card" id="network-status">
+                <h3>🌐 网络状态</h3>
+                <div id="network-info">检查中...</div>
+            </div>
+            <div class="status-card" id="overall-status">
+                <h3>🎯 整体状态</h3>
+                <div id="overall-info">评估中...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 CDN加载测试</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+            <div id="test-progress">准备开始测试...</div>
+            <button class="btn" onclick="startCDNTest()">开始CDN测试</button>
+            <button class="btn" onclick="testFunctionality()">功能测试</button>
+            <button class="btn" onclick="clearLogs()">清除日志</button>
+        </div>
+
+        <div class="network-info">
+            <div class="info-item">
+                <strong>浏览器:</strong>
+                <div id="browser-info"></div>
+            </div>
+            <div class="info-item">
+                <strong>连接类型:</strong>
+                <div id="connection-info"></div>
+            </div>
+            <div class="info-item">
+                <strong>时间戳:</strong>
+                <div id="timestamp"></div>
+            </div>
+            <div class="info-item">
+                <strong>地理位置:</strong>
+                <div id="location-info"></div>
+            </div>
+        </div>
+
+        <div class="log-area" id="log-output"></div>
+
+        <div class="test-section">
+            <h3>🛠️ 手动修复工具</h3>
+            <button class="btn" onclick="forceReload()">强制重新加载依赖</button>
+            <button class="btn" onclick="switchCDN()">切换CDN源</button>
+            <button class="btn" onclick="downloadDiagnostic()">下载诊断报告</button>
+        </div>
+    </div>
+
+    <script>
+        // CDN源配置
+        const CDN_SOURCES = {
+            marked: [
+                'https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js',
+                'https://unpkg.com/marked@15.0.12/marked.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.12/marked.min.js'
+            ],
+            dompurify: [
+                'https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js',
+                'https://unpkg.com/dompurify@3.0.5/dist/purify.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js'
+            ]
+        };
+
+        let currentCDNIndex = { marked: 0, dompurify: 0 };
+        let testResults = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDiagnostic();
+            startPeriodicCheck();
+        });
+
+        function initializeDiagnostic() {
+            log('🚀 初始化CDN依赖诊断工具...');
+            updateBrowserInfo();
+            updateTimestamp();
+            checkDependencies();
+        }
+
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#74c0fc',
+                success: '#51cf66',
+                error: '#ff6b6b',
+                warning: '#ffd43b'
+            };
+            
+            const color = colors[type] || colors.info;
+            logOutput.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        function updateBrowserInfo() {
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine
+            };
+            
+            document.getElementById('browser-info').textContent = 
+                `${getBrowserName()} ${getBrowserVersion()}`;
+            
+            document.getElementById('connection-info').textContent = 
+                navigator.onLine ? '在线' : '离线';
+            
+            // 检测连接类型（如果支持）
+            if ('connection' in navigator) {
+                const conn = navigator.connection;
+                document.getElementById('connection-info').textContent += 
+                    ` (${conn.effectiveType || 'unknown'})`;
+            }
+        }
+
+        function updateTimestamp() {
+            document.getElementById('timestamp').textContent = 
+                new Date().toLocaleString('zh-CN');
+        }
+
+        function getBrowserName() {
+            const ua = navigator.userAgent;
+            if (ua.includes('Chrome')) return 'Chrome';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Safari')) return 'Safari';
+            if (ua.includes('Edge')) return 'Edge';
+            return 'Unknown';
+        }
+
+        function getBrowserVersion() {
+            const ua = navigator.userAgent;
+            const match = ua.match(/(Chrome|Firefox|Safari|Edge)\/(\d+\.\d+)/);
+            return match ? match[2] : 'Unknown';
+        }
+
+        function checkDependencies() {
+            // 检查marked.js
+            const markedStatus = document.getElementById('marked-status');
+            const markedInfo = document.getElementById('marked-info');
+            
+            if (typeof window.marked !== 'undefined') {
+                markedStatus.className = 'status-card success';
+                markedInfo.innerHTML = '✅ 已加载<br>版本: ' + 
+                    (window.marked.version || 'Unknown');
+                log('✅ marked.js 检测成功', 'success');
+            } else {
+                markedStatus.className = 'status-card error';
+                markedInfo.innerHTML = '❌ 未加载';
+                log('❌ marked.js 未检测到', 'error');
+            }
+
+            // 检查DOMPurify
+            const purifyStatus = document.getElementById('dompurify-status');
+            const purifyInfo = document.getElementById('dompurify-info');
+            
+            if (typeof window.DOMPurify !== 'undefined') {
+                purifyStatus.className = 'status-card success';
+                purifyInfo.innerHTML = '✅ 已加载<br>版本: ' + 
+                    (window.DOMPurify.version || 'Unknown');
+                log('✅ DOMPurify 检测成功', 'success');
+            } else {
+                purifyStatus.className = 'status-card error';
+                purifyInfo.innerHTML = '❌ 未加载';
+                log('❌ DOMPurify 未检测到', 'error');
+            }
+
+            // 更新网络状态
+            const networkStatus = document.getElementById('network-status');
+            const networkInfo = document.getElementById('network-info');
+            
+            if (navigator.onLine) {
+                networkStatus.className = 'status-card success';
+                networkInfo.innerHTML = '✅ 网络连接正常';
+            } else {
+                networkStatus.className = 'status-card error';
+                networkInfo.innerHTML = '❌ 网络连接异常';
+            }
+
+            updateOverallStatus();
+        }
+
+        function updateOverallStatus() {
+            const overallStatus = document.getElementById('overall-status');
+            const overallInfo = document.getElementById('overall-info');
+            
+            const markedOK = typeof window.marked !== 'undefined';
+            const purifyOK = typeof window.DOMPurify !== 'undefined';
+            const networkOK = navigator.onLine;
+
+            if (markedOK && purifyOK) {
+                overallStatus.className = 'status-card success';
+                overallInfo.innerHTML = '🎉 所有依赖正常<br>Markdown渲染可用';
+            } else if (!networkOK) {
+                overallStatus.className = 'status-card error';
+                overallInfo.innerHTML = '🚨 网络连接问题<br>无法加载依赖';
+            } else {
+                overallStatus.className = 'status-card error';
+                overallInfo.innerHTML = '⚠️ 依赖缺失<br>需要修复';
+            }
+        }
+
+        async function startCDNTest() {
+            log('🔍 开始CDN加载测试...', 'info');
+            
+            const progress = document.getElementById('progress');
+            const testProgress = document.getElementById('test-progress');
+            
+            testResults = {
+                marked: {},
+                dompurify: {},
+                timestamp: new Date().toISOString()
+            };
+
+            let totalTests = CDN_SOURCES.marked.length + CDN_SOURCES.dompurify.length;
+            let completedTests = 0;
+
+            // 测试marked.js的CDN源
+            for (let i = 0; i < CDN_SOURCES.marked.length; i++) {
+                const url = CDN_SOURCES.marked[i];
+                testProgress.textContent = `测试 marked.js 源 ${i + 1}/${CDN_SOURCES.marked.length}`;
+                
+                try {
+                    const result = await testCDNSource(url, 'marked');
+                    testResults.marked[url] = result;
+                    log(`📝 marked.js 源测试 ${url}: ${result.success ? '✅' : '❌'}`, 
+                        result.success ? 'success' : 'error');
+                } catch (error) {
+                    testResults.marked[url] = { success: false, error: error.message };
+                    log(`📝 marked.js 源测试失败 ${url}: ${error.message}`, 'error');
+                }
+                
+                completedTests++;
+                progress.style.width = `${(completedTests / totalTests) * 100}%`;
+            }
+
+            // 测试DOMPurify的CDN源
+            for (let i = 0; i < CDN_SOURCES.dompurify.length; i++) {
+                const url = CDN_SOURCES.dompurify[i];
+                testProgress.textContent = `测试 DOMPurify 源 ${i + 1}/${CDN_SOURCES.dompurify.length}`;
+                
+                try {
+                    const result = await testCDNSource(url, 'dompurify');
+                    testResults.dompurify[url] = result;
+                    log(`🛡️ DOMPurify 源测试 ${url}: ${result.success ? '✅' : '❌'}`, 
+                        result.success ? 'success' : 'error');
+                } catch (error) {
+                    testResults.dompurify[url] = { success: false, error: error.message };
+                    log(`🛡️ DOMPurify 源测试失败 ${url}: ${error.message}`, 'error');
+                }
+                
+                completedTests++;
+                progress.style.width = `${(completedTests / totalTests) * 100}%`;
+            }
+
+            testProgress.textContent = '✅ CDN测试完成';
+            log('🎯 CDN测试完成，查看结果总结', 'success');
+            
+            generateTestSummary();
+        }
+
+        async function testCDNSource(url, type) {
+            const startTime = Date.now();
+            
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                const tempId = 'test_' + Date.now();
+                script.id = tempId;
+                script.src = url;
+                
+                const timeout = setTimeout(() => {
+                    document.head.removeChild(script);
+                    reject(new Error('超时'));
+                }, 10000);
+
+                script.onload = () => {
+                    clearTimeout(timeout);
+                    const loadTime = Date.now() - startTime;
+                    document.head.removeChild(script);
+                    
+                    // 验证库是否正确加载
+                    let success = false;
+                    if (type === 'marked' && typeof window.marked === 'function') {
+                        success = true;
+                    } else if (type === 'dompurify' && typeof window.DOMPurify === 'object') {
+                        success = true;
+                    }
+                    
+                    resolve({
+                        success: success,
+                        loadTime: loadTime,
+                        timestamp: new Date().toISOString()
+                    });
+                };
+
+                script.onerror = () => {
+                    clearTimeout(timeout);
+                    document.head.removeChild(script);
+                    reject(new Error('加载失败'));
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        function generateTestSummary() {
+            log('📊 === CDN测试结果总结 ===', 'info');
+            
+            // marked.js结果
+            const markedSuccessful = Object.entries(testResults.marked)
+                .filter(([url, result]) => result.success);
+            
+            if (markedSuccessful.length > 0) {
+                log(`✅ marked.js 可用源: ${markedSuccessful.length}个`, 'success');
+                markedSuccessful.forEach(([url, result]) => {
+                    log(`  - ${url} (${result.loadTime}ms)`, 'success');
+                });
+            } else {
+                log('❌ marked.js 没有可用源', 'error');
+            }
+
+            // DOMPurify结果
+            const purifySuccessful = Object.entries(testResults.dompurify)
+                .filter(([url, result]) => result.success);
+            
+            if (purifySuccessful.length > 0) {
+                log(`✅ DOMPurify 可用源: ${purifySuccessful.length}个`, 'success');
+                purifySuccessful.forEach(([url, result]) => {
+                    log(`  - ${url} (${result.loadTime}ms)`, 'success');
+                });
+            } else {
+                log('❌ DOMPurify 没有可用源', 'error');
+            }
+
+            // 建议
+            if (markedSuccessful.length > 0 && purifySuccessful.length > 0) {
+                log('🎉 建议: 所有依赖都有可用源，可以正常使用', 'success');
+            } else {
+                log('⚠️ 建议: 依赖加载有问题，需要检查网络或更换CDN源', 'warning');
+            }
+        }
+
+        async function testFunctionality() {
+            log('🧪 开始功能测试...', 'info');
+
+            if (typeof window.marked === 'undefined') {
+                log('❌ marked.js 不可用，跳过功能测试', 'error');
+                return;
+            }
+
+            if (typeof window.DOMPurify === 'undefined') {
+                log('❌ DOMPurify 不可用，跳过功能测试', 'error');
+                return;
+            }
+
+            try {
+                // 测试marked.js
+                const testMarkdown = '**粗体** *斜体* `代码` [链接](https://example.com)';
+                const markedResult = window.marked(testMarkdown);
+                
+                if (markedResult.includes('<strong>') && markedResult.includes('<em>')) {
+                    log('✅ marked.js 功能测试通过', 'success');
+                } else {
+                    log('❌ marked.js 功能测试失败: 输出不符合预期', 'error');
+                }
+
+                // 测试DOMPurify
+                const testHtml = '<scr' + 'ipt>alert("xss")</scr' + 'ipt><p>安全内容</p>';
+                const purifyResult = window.DOMPurify.sanitize(testHtml);
+                
+                if (!purifyResult.includes('<scr' + 'ipt>') && purifyResult.includes('<p>')) {
+                    log('✅ DOMPurify 功能测试通过', 'success');
+                } else {
+                    log('❌ DOMPurify 功能测试失败: XSS过滤失效', 'error');
+                }
+
+                // 综合测试
+                const combinedResult = window.DOMPurify.sanitize(window.marked(testMarkdown));
+                log('🔄 综合测试结果: ' + combinedResult, 'info');
+
+            } catch (error) {
+                log('❌ 功能测试异常: ' + error.message, 'error');
+            }
+        }
+
+        function forceReload() {
+            log('🔄 强制重新加载依赖...', 'info');
+            
+            // 移除现有的script标签
+            const scripts = document.querySelectorAll('script[src*="marked"], script[src*="dompurify"]');
+            scripts.forEach(script => script.remove());
+            
+            // 清除全局变量
+            delete window.marked;
+            delete window.DOMPurify;
+            
+            // 重新加载
+            setTimeout(() => {
+                loadDependencies();
+            }, 1000);
+        }
+
+        function switchCDN() {
+            log('🔀 切换到备用CDN源...', 'info');
+            
+            currentCDNIndex.marked = (currentCDNIndex.marked + 1) % CDN_SOURCES.marked.length;
+            currentCDNIndex.dompurify = (currentCDNIndex.dompurify + 1) % CDN_SOURCES.dompurify.length;
+            
+            log(`📝 marked.js 切换到源: ${CDN_SOURCES.marked[currentCDNIndex.marked]}`, 'info');
+            log(`🛡️ DOMPurify 切换到源: ${CDN_SOURCES.dompurify[currentCDNIndex.dompurify]}`, 'info');
+            
+            forceReload();
+        }
+
+        function loadDependencies() {
+            const markedScript = document.createElement('script');
+            markedScript.src = CDN_SOURCES.marked[currentCDNIndex.marked];
+            markedScript.onload = () => {
+                log('✅ marked.js 重新加载成功', 'success');
+                checkDependencies();
+            };
+            markedScript.onerror = () => {
+                log('❌ marked.js 重新加载失败', 'error');
+            };
+            document.head.appendChild(markedScript);
+
+            const purifyScript = document.createElement('script');
+            purifyScript.src = CDN_SOURCES.dompurify[currentCDNIndex.dompurify];
+            purifyScript.onload = () => {
+                log('✅ DOMPurify 重新加载成功', 'success');
+                checkDependencies();
+            };
+            purifyScript.onerror = () => {
+                log('❌ DOMPurify 重新加载失败', 'error');
+            };
+            document.head.appendChild(purifyScript);
+        }
+
+        function downloadDiagnostic() {
+            const diagnosticData = {
+                timestamp: new Date().toISOString(),
+                browser: {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    cookieEnabled: navigator.cookieEnabled,
+                    onLine: navigator.onLine
+                },
+                dependencies: {
+                    marked: typeof window.marked !== 'undefined',
+                    dompurify: typeof window.DOMPurify !== 'undefined'
+                },
+                testResults: testResults,
+                logs: document.getElementById('log-output').innerText
+            };
+
+            const blob = new Blob([JSON.stringify(diagnosticData, null, 2)], 
+                { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flarum-markdown-diagnostic-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            log('💾 诊断报告已下载', 'success');
+        }
+
+        function clearLogs() {
+            document.getElementById('log-output').innerHTML = '';
+            log('🧹 日志已清除', 'info');
+        }
+
+        function startPeriodicCheck() {
+            setInterval(() => {
+                checkDependencies();
+                updateTimestamp();
+            }, 5000); // 每5秒检查一次
+        }
+
+        // 监听网络状态变化
+        window.addEventListener('online', () => {
+            log('🌐 网络连接已恢复', 'success');
+            checkDependencies();
+        });
+
+        window.addEventListener('offline', () => {
+            log('🚫 网络连接已断开', 'error');
+            checkDependencies();
+        });
+    </script>
+</body>
+</html>
