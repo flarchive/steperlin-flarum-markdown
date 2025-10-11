@@ -1,0 +1,88 @@
+{
+    "name": "steperlin/flarum-markdown",
+    "description": "A modern, secure Markdown extension for Flarum with client-side rendering using marked.js",
+    "type": "flarum-extension",
+    "keywords": [
+        "flarum",
+        "extension",
+        "markdown",
+        "formatting",
+        "editor",
+        "marked",
+        "client-side",
+        "preview"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "steperlin",
+            "email": "steperlin@example.com",
+            "homepage": "https://zhichai.net"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/linkerlin/flarum-markdown/issues",
+        "source": "https://github.com/linkerlin/flarum-markdown",
+        "forum": "https://zhichai.net",
+        "docs": "https://github.com/linkerlin/flarum-markdown/blob/main/README.md"
+    },
+    "homepage": "https://zhichai.net",
+    "funding": [
+        {
+            "type": "website",
+            "url": "https://flarum.org/donate/"
+        }
+    ],
+    "require": {
+        "flarum/core": "^2.0.0-beta.3",
+        "php": ">=8.1"
+    },
+    "suggest": {
+        "flarum/bbcode": "For BBCode to Markdown migration",
+        "flarum/mentions": "For @username mentions in Markdown"
+    },
+    "autoload": {
+        "psr-4": {
+            "Steperlin\\Markdown\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "2.x-dev"
+        },
+        "flarum-extension": {
+            "title": "Markdown",
+            "category": "feature",
+            "icon": {
+                "image": "icon.svg",
+                "backgroundColor": "#0d1117",
+                "backgroundSize": "80%",
+                "backgroundRepeat": "no-repeat",
+                "backgroundPosition": "center",
+                "color": "#58a6ff"
+            }
+        },
+        "flarum-cli": {
+            "modules": {
+                "admin": false,
+                "forum": true,
+                "js": true,
+                "jsCommon": false,
+                "css": true,
+                "gitConf": true,
+                "githubActions": true,
+                "prettier": true,
+                "typescript": false,
+                "bundlewatch": false,
+                "backendTesting": false,
+                "editorConfig": true,
+                "styleci": true
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}
