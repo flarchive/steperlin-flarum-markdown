@@ -1,0 +1,70 @@
+.MarkdownToolbar {
+  display: inline-block;
+}
+
+// Markdown内容样式
+.MarkdownContent {
+  // 确保渲染内容的样式正确
+  word-wrap: break-word;
+  
+  .spoiler {
+    background: #000;
+    color: #000;
+    cursor: pointer;
+    
+    &:hover, &:focus {
+      background: transparent;
+      color: inherit;
+    }
+  }
+}
+
+// 预览编辑器样式
+.MarkdownPreviewEditor {
+  .PreviewToolbar {
+    display: flex;
+    border-bottom: 1px solid var(--flarum-border-color);
+    margin-bottom: 10px;
+    
+    .Button {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      
+      &.active {
+        background: var(--flarum-primary-color);
+        color: #fff;
+      }
+    }
+  }
+  
+  .PreviewPane {
+    min-height: 200px;
+    padding: 10px;
+    border: 1px solid var(--flarum-border-color);
+    border-radius: 4px;
+  }
+}
+
+// 原有的spoiler样式（兼容性保留）
+span.spoiler {
+  // Style the inline spoiler itself: a dark block, invisible font
+  background: #444;
+  color: transparent;
+
+  // Try to generically hide all possible children
+  * {
+    // Links and other interactive elements would give their presence
+    // away when hovering
+    pointer-events: none;
+
+    // Children can have special text or background colors
+    background: transparent;
+    color: transparent;
+  }
+
+  // Hide images visually
+  img {
+    visibility: hidden;
+  }
+}
