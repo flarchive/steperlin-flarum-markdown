@@ -1,0 +1,20 @@
+name: Update Packagist
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  packagist:
+    runs-on: ubuntu-latest
+    name: Update Packagist
+    steps:
+      - name: Update Packagist
+        uses: packagist/update-package-action@v1
+        with:
+          username: ${{ secrets.PACKAGIST_USERNAME }}
+          api-token: ${{ secrets.PACKAGIST_TOKEN }}
+          package-url: https://packagist.org/packages/steperlin/flarum-markdown
