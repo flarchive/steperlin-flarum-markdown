@@ -2,13 +2,24 @@
 
 > **Read-only archive of released versions of steperlin/flarum-markdown.** Not for installation: use [Packagist](https://packagist.org/packages/steperlin/flarum-markdown) or the [upstream repository](https://github.com/linkerlin/flarum-markdown).
 
-**0** versions archived · Latest: [`v2.1.13`](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.13) · License: `MIT` · Flarum: `^2.0.0-beta.3`
+**14** versions archived · Latest: [`v2.1.13`](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.13) · License: `MIT` · Flarum: `^2.0.0-beta.3`
 
 ## Archived Versions
 
 | Version | Released | Flarum | Source |
 |---|---|---|---|
-| — | — | — | — |
+| `v2.1.0` | 2025-10-11 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.0) |
+| `v2.1.1` | 2025-10-11 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.1) |
+| `v2.1.10` | 2025-10-12 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.10) |
+| `v2.1.11` | 2025-10-12 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.11) |
+| `v2.1.12` | 2025-10-12 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.12) |
+| `v2.1.13` | 2025-10-12 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.13) |
+| `v2.1.2` | 2025-10-11 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.2) |
+| `v2.1.3` | 2025-10-11 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.3) |
+| `v2.1.4` | 2025-10-11 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.4) |
+| `v2.1.5` | 2025-10-11 | `^2.0.0-beta.3` | [Browse](https://github.com/flarchive/steperlin-flarum-markdown/tree/archive/v2.1.5) |
+
+[View all 14 versions](https://github.com/flarchive/steperlin-flarum-markdown/tags)
 
 Catalog entry: [packages/steperlin-flarum-markdown.json](https://github.com/flarchive/archive-index/blob/main/packages/steperlin-flarum-markdown.json)
 
